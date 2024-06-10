@@ -1,14 +1,32 @@
-﻿using Microsoft.SemanticKernel;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.SemanticKernel.Plugins.Web;
+using Microsoft.SemanticKernel.Plugins.Web.Bing;
+
 
 var builder = Kernel.CreateBuilder();
+
+// Add logging  
+builder.Services.AddLogging(b => b.AddConsole().SetMinimumLevel(LogLevel.Error));
+ 
 builder.Services.AddAzureOpenAIChatCompletion(
+
     );
 var kernel = builder.Build();
 
+//Add Bing Search
+#pragma warning disable SKEXP0050
+var bingConnector = new BingConnector("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+var plugin = new WebSearchEnginePlugin(bingConnector);
+kernel.ImportPluginFromObject(plugin, "BingPlugin");
+
+
 //import the function 
 kernel.ImportPluginFromType<Demographics>();
+
 
 //tell OpenAI it is ok to import the function
 var settings = new OpenAIPromptExecutionSettings(){ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions};
